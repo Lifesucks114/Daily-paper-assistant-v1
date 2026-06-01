@@ -6,11 +6,19 @@ from openai import OpenAI
 
 
 class OpenAISummarizer:
-    def __init__(self, model: str, temperature: float, max_output_tokens: int, logger):
+    def __init__(
+        self,
+        model: str,
+        temperature: float,
+        max_output_tokens: int,
+        logger,
+        research_profile: dict[str, Any] | None = None,
+    ):
         self.model = os.getenv("OPENAI_MODEL", model)
         self.temperature = temperature
         self.max_output_tokens = max_output_tokens
         self.logger = logger
+        self.research_profile = research_profile or {}
         self.client = OpenAI() if os.getenv("OPENAI_API_KEY") else None
 
     def summarize(
@@ -40,7 +48,7 @@ class OpenAISummarizer:
                 messages=[
                     {
                         "role": "system",
-                        "content": "You are a careful literature assistant for biomass conversion and hemicellulose/XOS research.",
+                        "content": "You are a careful research literature assistant. Be strict about relevance and return structured JSON.",
                     },
                     {"role": "user", "content": prompt},
                 ],
@@ -65,15 +73,18 @@ class OpenAISummarizer:
         experimental_info: dict[str, Any],
         pdf_text: str,
     ) -> str:
+        profile_name = self.research_profile.get("name", "the configured research topic")
+        description = self.research_profile.get("description", "")
+        strict_scope = self.research_profile.get("strict_scope", "")
+        scale = self.research_profile.get("relevance_scale", {})
+        fields = self.research_profile.get("extraction_fields", [])
+        scale_text = "; ".join(f"{key}: {value}" for key, value in scale.items())
+        fields_text = ", ".join(fields) if fields else "key experimental or analytical fields relevant to the research topic"
         return f"""
-Analyze this paper for a researcher working on biomass conversion, hemicellulose extraction,
-xylan/arabinoxylan, xylooligosaccharides (XOS), hydrolysis, HPLC sugar analysis, membrane
-separation, and purification of oligosaccharides from agricultural residues.
-
-Primary target: laboratory-scale XOS production from biomass-derived xylan or hemicellulose.
-Be strict. General polysaccharide materials, biomedical gels, biochar, wastewater treatment,
-generic biomass valorization, and unrelated catalysis should score 0-2 unless they directly
-help produce, purify, quantify, or experimentally optimize XOS or xylan/hemicellulose hydrolysates.
+Analyze this paper for this research profile:
+Name: {profile_name}
+Description: {description}
+Strict scope guidance: {strict_scope}
 
 Title: {paper.get("title", "")}
 Journal: {paper.get("journal", "")}
@@ -87,13 +98,10 @@ PDF text excerpt, if available:
 Return strict JSON only, no markdown fences, with these keys:
 summary_zh: Chinese 3-5 bullet summary as one string.
 summary_en: English 3-5 bullet summary as one string.
-relevance_score: integer 0-5, where 0 unrelated; 1 only broad biomass/carbohydrate context; 2 adjacent method but not XOS production; 3 directly related to xylan/hemicellulose extraction, hydrolysis, XOS, or oligosaccharide purification/analysis; 4 highly relevant with lab conditions, yield, HPLC, DP distribution, or separation data; 5 directly reusable for XOS experimental design or dataset construction.
+relevance_score: integer 0-5 using this scale: {scale_text}
 reason_for_relevance: concise reason.
 data_worth_extracting: yes/no plus a short reason.
-experimental_info: object with these keys:
-biomass_type, pretreatment_method, acid_enzyme_type, temperature, reaction_time,
-solid_liquid_ratio, pH, yield, XOS_DP_distribution, monosaccharide_composition,
-HPLC_column, mobile_phase, flow_rate, detector, separation_method.
+experimental_info: object with these keys: {fields_text}.
 """.strip()
 
     def _parse_json(

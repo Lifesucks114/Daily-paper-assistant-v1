@@ -1,0 +1,62 @@
+name: XOS laboratory production
+
+description: >
+  Literature relevant to laboratory-scale xylooligosaccharide (XOS) production
+  from biomass-derived xylan, arabinoxylan, or hemicellulose, including
+  extraction, hydrolysis, purification, and analytical quantification.
+
+strict_scope: >
+  General polysaccharide materials, biomedical gels, biochar, wastewater
+  treatment, generic biomass valorization, and unrelated catalysis should score
+  0-2 unless they directly help produce, purify, quantify, or experimentally
+  optimize XOS or xylan/hemicellulose hydrolysates.
+
+required_scope_keywords:
+  - XOS
+  - xylooligosaccharide
+  - xylooligosaccharides
+  - xylan
+  - xylanase
+  - hemicellulose
+  - arabinoxylan
+
+hard_exclude_keywords:
+  - hydrogel
+  - sensor
+  - TENG
+  - biomedical
+  - hernia
+  - wound
+  - anticoagulant
+  - antiplatelet
+  - uranium
+  - battery
+  - energy storage
+  - wastewater
+  - cancer
+  - tumor
+
+relevance_scale:
+  "0": unrelated
+  "1": only broad biomass/carbohydrate context
+  "2": adjacent method but not XOS production
+  "3": directly related to xylan/hemicellulose extraction, hydrolysis, XOS, or oligosaccharide purification/analysis
+  "4": highly relevant with lab conditions, yield, HPLC, DP distribution, or separation data
+  "5": directly reusable for XOS experimental design or dataset construction
+
+extraction_fields:
+  - biomass_type
+  - pretreatment_method
+  - acid_enzyme_type
+  - temperature
+  - reaction_time
+  - solid_liquid_ratio
+  - pH
+  - yield
+  - XOS_DP_distribution
+  - monosaccharide_composition
+  - HPLC_column
+  - mobile_phase
+  - flow_rate
+  - detector
+  - separation_method

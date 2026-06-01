@@ -2,14 +2,11 @@ from datetime import date
 from pathlib import Path
 from typing import Iterable
 
-from src.filters.relevance_filter import is_xos_production_scope
-
-
 def generate_weekly_report(rows: Iterable, output_dir: str, report_date: date) -> Path:
     year, week, _ = report_date.isocalendar()
     Path(output_dir).mkdir(parents=True, exist_ok=True)
     path = Path(output_dir) / f"{year}-{week:02d}.md"
-    rows = [row for row in rows if row["relevance_score"] >= 3 and is_xos_production_scope(dict(row))]
+    rows = [row for row in rows if row["relevance_score"] >= 3]
 
     lines = [
         f"# Weekly Paper Report - {year}-W{week:02d}",

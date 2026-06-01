@@ -1,77 +1,27 @@
 from typing import Any
 
 
-def is_xos_production_scope(paper: dict[str, Any]) -> bool:
+def is_in_research_scope(
+    paper: dict[str, Any],
+    required_terms: list[str] | None = None,
+    excluded_terms: list[str] | None = None,
+) -> bool:
     text = f"{paper.get('title', '')} {paper.get('abstract', '')} {paper.get('reason_for_relevance', '')}".lower()
-    required_terms = [
-        "xos",
-        "xylooligosaccharide",
-        "xylooligosaccharides",
-        "xylan",
-        "xylanase",
-        "hemicellulose",
-        "arabinoxylan",
-    ]
-    hard_exclusions = [
-        "hydrogel",
-        "sensor",
-        "teng",
-        "biomedical",
-        "hernia",
-        "wound",
-        "anticoagulant",
-        "antiplatelet",
-        "uranium",
-        "battery",
-        "energy storage",
-        "wastewater",
-        "cancer",
-        "tumor",
-    ]
-    return any(term in text for term in required_terms) and not any(term in text for term in hard_exclusions)
+    required = [term.lower() for term in (required_terms or [])]
+    excluded = [term.lower() for term in (excluded_terms or [])]
+    has_required = True if not required else any(term in text for term in required)
+    has_excluded = any(term in text for term in excluded)
+    return has_required and not has_excluded
 
 
 def simple_relevance_score(paper: dict[str, Any], matched_keywords: list[str]) -> float:
     text = f"{paper.get('title', '')} {paper.get('abstract', '')}".lower()
-    score = min(5.0, len(set(matched_keywords)) * 0.5)
-
-    substrate_terms = [
-        "xylooligosaccharide",
-        "xylooligosaccharides",
-        "xos",
-        "xylan",
-        "xylanase",
-        "hemicellulose",
-        "arabinoxylan",
-        "oligosaccharide",
-    ]
-    production_terms = [
-        "acid hydrolysis",
-        "enzymatic hydrolysis",
-        "hydrolysis",
-        "autohydrolysis",
-        "pretreatment",
-        "extraction",
-        "fractionation",
-        "saccharification",
-        "sugar release",
-        "purification",
-        "hplc",
-        "membrane",
-    ]
-    substrate_hits = sum(1 for term in substrate_terms if term in text)
-    production_hits = sum(1 for term in production_terms if term in text)
-
-    for term in substrate_terms:
+    score = min(5.0, len(set(matched_keywords)) * 0.7)
+    title = paper.get("title", "").lower()
+    for term in set(keyword.lower() for keyword in matched_keywords):
         if term in text:
-            score += 0.6
-    for term in production_terms:
-        if term in text:
-            score += 0.35
-
-    if substrate_hits and production_hits:
-        score += 1.0
-    elif not substrate_hits:
-        score = min(score, 1.2)
+            score += 0.2
+        if term in title:
+            score += 0.4
 
     return round(min(5.0, score), 1)

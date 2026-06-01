@@ -16,7 +16,7 @@ from src.downloaders.pdf_downloader import download_open_access_pdf
 from src.fetchers.crossref_fetcher import CrossrefFetcher
 from src.fetchers.rss_fetcher import fetch_rss_papers
 from src.filters.keyword_filter import keyword_match
-from src.filters.relevance_filter import is_xos_production_scope
+from src.filters.relevance_filter import is_in_research_scope
 from src.integrations.obsidian_writer import write_report_to_obsidian
 from src.reports.daily_report import generate_daily_report
 from src.reports.weekly_report import generate_weekly_report
@@ -111,7 +111,13 @@ def select_active_volume_candidates(
     return selected[:max_total]
 
 
-def run_daily(settings: dict[str, Any], journals: dict[str, Any], keywords: dict[str, Any], logger) -> Path:
+def run_daily(
+    settings: dict[str, Any],
+    journals: dict[str, Any],
+    keywords: dict[str, Any],
+    research_profile: dict[str, Any],
+    logger,
+) -> Path:
     db = PaperDatabase(settings["paths"]["database"])
     today = date.today()
     now = datetime.now().isoformat(timespec="seconds")
@@ -133,6 +139,7 @@ def run_daily(settings: dict[str, Any], journals: dict[str, Any], keywords: dict
         temperature=float(settings["openai"].get("temperature", 0.2)),
         max_output_tokens=int(settings["openai"].get("max_output_tokens", 1200)),
         logger=logger,
+        research_profile=research_profile,
     )
     fetched_candidates = fetch_rss_papers(journals.get("journals", []), logger)
     enriched_candidates = []
@@ -150,7 +157,11 @@ def run_daily(settings: dict[str, Any], journals: dict[str, Any], keywords: dict
         match = keyword_match(enriched, keywords)
         relevance = score_relevance(enriched, match["matched_keywords"]) if match["is_match"] else 0
         is_candidate = match["keyword_score"] >= min_keyword_score and relevance >= min_relevance_score
-        in_scope = is_xos_production_scope(enriched)
+        in_scope = is_in_research_scope(
+            enriched,
+            research_profile.get("required_scope_keywords", []),
+            research_profile.get("hard_exclude_keywords", []),
+        )
         status = "candidate" if is_candidate and in_scope else "irrelevant"
         is_candidate = is_candidate and in_scope
         can_ai_screen = (
@@ -194,8 +205,10 @@ def run_daily(settings: dict[str, Any], journals: dict[str, Any], keywords: dict
                 experimental = summaries.get("experimental_info", experimental)
                 reason_for_relevance = summaries.get("reason_for_relevance", reason_for_relevance)
                 data_worth_extracting = summaries.get("data_worth_extracting", "")
-                in_scope_after_ai = is_xos_production_scope(
-                    {**enriched, "reason_for_relevance": summaries.get("reason_for_relevance", "")}
+                in_scope_after_ai = is_in_research_scope(
+                    {**enriched, "reason_for_relevance": summaries.get("reason_for_relevance", "")},
+                    research_profile.get("required_scope_keywords", []),
+                    research_profile.get("hard_exclude_keywords", []),
                 )
                 status = (
                     "relevant"
@@ -248,7 +261,14 @@ def run_daily(settings: dict[str, Any], journals: dict[str, Any], keywords: dict
                 logger,
             )
             experimental = infer_experimental_info({**paper, "abstract": f"{paper.get('abstract', '')} {pdf_text[:4000]}"})
-            summaries = summarizer.summarize(paper, float(row["relevance_score"] or 0), experimental, pdf_text)
+            backfill_summarizer = OpenAISummarizer(
+                model=settings["openai"]["model"],
+                temperature=float(settings["openai"].get("temperature", 0.2)),
+                max_output_tokens=int(settings["openai"].get("max_output_tokens", 1200)),
+                logger=logger,
+                research_profile=research_profile,
+            )
+            summaries = backfill_summarizer.summarize(paper, float(row["relevance_score"] or 0), experimental, pdf_text)
             db.update_analysis(
                 int(row["id"]),
                 {
@@ -293,7 +313,7 @@ def run_weekly(settings: dict[str, Any], logger) -> Path:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Daily literature assistant for biomass/XOS research.")
+    parser = argparse.ArgumentParser(description="Configurable daily research literature assistant.")
     parser.add_argument("--mode", choices=["daily", "weekly", "all"], default="daily")
     args = parser.parse_args()
 
@@ -305,9 +325,10 @@ def main() -> None:
     settings = load_yaml("config/settings.yaml")
     journals = load_yaml("config/journals.yaml")
     keywords = load_yaml("config/keywords.yaml")
+    research_profile = load_yaml("config/research_profile.yaml")
 
     if args.mode in ("daily", "all"):
-        run_daily(settings, journals, keywords, logger)
+        run_daily(settings, journals, keywords, research_profile, logger)
     if args.mode in ("weekly", "all"):
         run_weekly(settings, logger)
 
