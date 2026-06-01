@@ -1,8 +1,8 @@
-# Daily Paper Assistant
+# Daily Paper Assistant Template
 
-Automated daily literature assistant for biomass conversion, hemicellulose extraction, xylan/arabinoxylan, xylooligosaccharides (XOS), hydrolysis, HPLC sugar analysis, membrane separation, and oligosaccharide purification.
+An automated daily literature assistant template for researchers. It watches journal RSS feeds, enriches papers with Crossref, checks legal open-access PDF availability, uses the OpenAI API for bilingual summaries and structured extraction, and writes daily/weekly Markdown reports.
 
-The working version fetches new papers from journal RSS feeds, enriches metadata with Crossref, stores papers in SQLite, filters by research keywords, legally discovers open-access PDFs, summarizes and extracts experimental information with the OpenAI API, and writes Markdown daily and weekly reports.
+The repository is designed to be forked or used as a GitHub template. You customize the journals, keywords, scoring prompt, and report fields for your own research area.
 
 ## Features
 
@@ -22,6 +22,42 @@ The working version fetches new papers from journal RSS feeds, enriches metadata
 - Weekly reports in `reports/weekly/YYYY-WW.md`.
 - GitHub Actions schedule for daily runs and Monday weekly reports.
 - Windows-compatible paths and commands.
+
+## Who Is This For?
+
+Use this template if you want a private or public GitHub repository that automatically:
+
+- Tracks selected journals.
+- Finds new papers in the latest active volume/issue.
+- Filters papers for your research topic.
+- Uses a small, capped number of OpenAI calls to analyze likely relevant papers.
+- Produces Markdown reports that can be read in GitHub, Obsidian, or any notes app.
+
+This repository currently includes an example configuration for XOS laboratory production from xylan/hemicellulose. Replace it with your own field-specific configuration before sharing or deploying.
+
+## Use As A Template
+
+1. Click **Use this template** or fork the repository.
+2. Keep the repository private if it will contain generated reports or a SQLite database from your own reading workflow.
+3. Edit:
+
+```text
+config/journals.yaml
+config/keywords.yaml
+config/settings.yaml
+src/analyzers/summarizer.py
+```
+
+4. Add GitHub Actions secrets:
+
+```text
+OPENAI_API_KEY
+CROSSREF_MAILTO
+UNPAYWALL_EMAIL
+OPENAI_MODEL
+```
+
+5. Run the workflow manually once from the **Actions** tab.
 
 ## Setup
 
@@ -91,9 +127,9 @@ journals:
 
 Edit `config/keywords.yaml` to tune relevance:
 
-- `core_keywords`: central XOS and hemicellulose terms.
-- `biomass_keywords`: feedstocks and agricultural residues.
-- `method_keywords`: hydrolysis, pretreatment, HPLC, membrane separation, purification.
+- `core_keywords`: terms that define your research target.
+- `biomass_keywords` or equivalent domain group: material/source/context terms.
+- `method_keywords`: experimental, computational, or analytical methods.
 - `exclude_keywords`: terms that should suppress unrelated papers.
 
 Edit `config/settings.yaml` to adjust thresholds and paths.
@@ -119,7 +155,7 @@ summary_en, relevance_score, reason_for_relevance, experimental_conditions,
 data_worth_extracting, processed_time
 ```
 
-For the PhD topic, the assistant tries to extract:
+The included XOS example extracts:
 
 ```text
 biomass_type, pretreatment_method, acid_enzyme_type, temperature,
@@ -161,6 +197,55 @@ Obsidian export is intended for local runs or a self-hosted runner, because GitH
 ## Legal PDF Handling
 
 The downloader uses open metadata only. It checks Unpaywall first, then Crossref PDF links. It downloads a PDF only when metadata indicates open access or an open license. It does not scrape publisher websites, bypass paywalls, or use institutional access.
+
+## Example Configurations
+
+The folder below contains a field-specific example:
+
+```text
+config/examples/xos-production/
+```
+
+To reuse it, copy its files into `config/`:
+
+```bash
+cp config/examples/xos-production/journals.yaml config/journals.yaml
+cp config/examples/xos-production/keywords.yaml config/keywords.yaml
+```
+
+On Windows:
+
+```cmd
+copy config\examples\xos-production\journals.yaml config\journals.yaml
+copy config\examples\xos-production\keywords.yaml config\keywords.yaml
+```
+
+## Publish Checklist
+
+Before making a public repository or template:
+
+- Rotate any API key that was ever pasted into chat, screenshots, or commits.
+- Confirm `.env` is not tracked by Git.
+- Confirm `.env.example` contains placeholders only.
+- Decide whether to commit `data/papers.db` and generated reports. For a clean template, remove generated data first.
+- Keep journal RSS URLs and keywords generic or clearly mark them as examples.
+
+## Clean Template Reset
+
+For a clean public template, remove generated runtime artifacts:
+
+```bash
+rm -f data/papers.db
+rm -f reports/daily/*.md reports/weekly/*.md
+rm -f logs/*.log
+```
+
+On Windows PowerShell:
+
+```powershell
+Remove-Item data\papers.db -ErrorAction SilentlyContinue
+Remove-Item reports\daily\*.md,reports\weekly\*.md,logs\*.log -ErrorAction SilentlyContinue
+```
 
 ## Obsidian
 

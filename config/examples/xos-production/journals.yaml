@@ -1,0 +1,25 @@
+journals:
+  - name: Biochemical Engineering Journal
+    publisher: Elsevier
+    issn: "1369-703X"
+    rss_url: https://rss.sciencedirect.com/publication/science/1369703X
+  - name: Bioresource Technology
+    publisher: Elsevier
+    issn: "0960-8524"
+    rss_url: https://rss.sciencedirect.com/publication/science/09608524
+  - name: ACS Sustainable Chemistry & Engineering
+    publisher: American Chemical Society
+    issn: "2168-0485"
+    rss_url: https://pubs.acs.org/action/showFeed?type=etoc&feed=rss&jc=ascecg
+  - name: Carbohydrate Polymers
+    publisher: Elsevier
+    issn: "0144-8617"
+    rss_url: https://rss.sciencedirect.com/publication/science/01448617
+  - name: Industrial Crops and Products
+    publisher: Elsevier
+    issn: "0926-6690"
+    rss_url: https://rss.sciencedirect.com/publication/science/09266690
+  - name: Nature
+    publisher: Springer Nature
+    issn: "0028-0836"
+    rss_url: https://www.nature.com/nature.rss
