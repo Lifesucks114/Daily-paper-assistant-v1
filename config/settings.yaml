@@ -1,0 +1,35 @@
+app:
+  timezone: Europe/Berlin
+  days_back: 2
+  max_papers_per_run: 300
+  selection_mode: latest_issue
+  fallback_max_papers_per_journal: 20
+  max_openai_summaries_per_run: 2
+  max_openai_screening_candidates: 3
+  min_keyword_score: 1
+  min_relevance_score: 1.5
+  min_ai_relevance_score: 3.0
+
+paths:
+  database: data/papers.db
+  daily_reports: reports/daily
+  weekly_reports: reports/weekly
+  pdfs: data/pdfs
+
+pdf:
+  enabled: true
+  max_pdf_pages: 8
+  max_pdf_chars_for_openai: 20000
+
+obsidian:
+  enabled: false
+  report_dir: Literature/Daily Paper Assistant
+
+openai:
+  model: gpt-4.1-mini
+  temperature: 0.2
+  max_output_tokens: 1200
+
+crossref:
+  base_url: https://api.crossref.org/works
+  timeout_seconds: 20

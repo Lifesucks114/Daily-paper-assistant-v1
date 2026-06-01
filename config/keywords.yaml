@@ -1,0 +1,45 @@
+core_keywords:
+  - hemicellulose
+  - xylan
+  - arabinoxylan
+  - xylooligosaccharides
+  - XOS
+  - xylan oligosaccharides
+  - xylan-derived oligosaccharides
+  - oligosaccharides
+  - oligosaccharide
+
+biomass_keywords:
+  - agricultural residues
+  - tomato stalk
+  - tomato stem
+  - cucumber stalk
+  - cucumber stem
+  - corn stover
+  - wheat straw
+  - sugarcane bagasse
+  - lignocellulosic biomass
+
+method_keywords:
+  - hemicellulose extraction
+  - xylan extraction
+  - XOS production
+  - xylooligosaccharide production
+  - acid hydrolysis
+  - enzymatic hydrolysis
+  - biomass pretreatment
+  - hydrothermal pretreatment
+  - autohydrolysis
+  - HPLC
+  - sugar analysis
+  - membrane separation
+  - ultrafiltration
+  - nanofiltration
+  - purification
+
+exclude_keywords:
+  - clinical trial
+  - cancer
+  - animal model
+  - wastewater epidemiology
+  - fossil fuel
